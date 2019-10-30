@@ -16,4 +16,4 @@ jobs:
     - name: Run clippy
       uses: actions-rs/clippy-check@v1.0.0
       with:
-        token: ${{ secrets.token }}
+        token: ${{ secrets.GITHUB_TOKEN }}
