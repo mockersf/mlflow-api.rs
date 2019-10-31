@@ -12,9 +12,9 @@ pub struct Experiment {
     /// Current life cycle stage of the experiment: “active” or “deleted”. Deleted experiments are not returned by APIs.
     pub lifecycle_stage: LifecycleStage,
     /// Last update time
-    pub last_update_time: Option<i64>,
+    pub last_update_time: Option<u64>,
     /// Creation time
-    pub creation_time: Option<i64>,
+    pub creation_time: Option<u64>,
     /// Additional metadata key-value pairs.
     pub tags: Option<Vec<ExperimentTag>>,
 }
