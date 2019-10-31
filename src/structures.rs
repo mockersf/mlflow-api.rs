@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Experiment
+/// Experiment.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Experiment {
     /// Unique identifier for the experiment.
@@ -86,14 +86,8 @@ pub struct RunData {
 pub struct RunInfo {
     /// Unique identifier for the run.
     pub run_id: String,
-    // /// [Deprecated, use run_id instead] Unique identifier for the run. This field will be removed in a future MLflow
-    // /// version.
-    // pub run_uuid: String,
     /// The experiment ID.
     pub experiment_id: String,
-    /// User who initiated the run. This field is deprecated as of MLflow 1.0, and will be removed in a future MLflow
-    /// release. Use ‘mlflow.user’ tag instead.
-    pub user_id: String,
     /// Current status of the run.
     pub status: RunStatus,
     /// Unix timestamp of when the run started in milliseconds.
