@@ -51,10 +51,24 @@ jobs:
         with:
           toolchain: stable
           override: true
-          components: rustfmt
       - uses: davidB/rust-cargo-make@v1
         with:
           version: 0.23.0
       - uses: actions/checkout@v1
       - name: Tests
         run: cargo make full-integration-tests
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: davidB/rust-cargo-make@v1
+        with:
+          version: 0.23.0
+      - uses: actions/checkout@v1
+      - name: Coverage
+        run: cargo make --profile ci-coverage-tasks ci-flow
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
