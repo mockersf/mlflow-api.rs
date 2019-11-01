@@ -61,29 +61,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mlflow = mlflow_api::MlflowClient::new(opt.url)?;
     match opt.command {
         Commands::CreateExperiment { name } => {
-            println!("{:#?}", mlflow.create_experiment(name.clone(), None)?);
+            println!("{:#?}", mlflow.create_experiment(&name, None)?);
         }
         Commands::ListExperiments => println!("{:#?}", mlflow.list_experiments(None)?),
         Commands::GetExperiment { experiment_id } => {
-            println!("{:#?}", mlflow.get_experiment(experiment_id)?)
+            println!("{:#?}", mlflow.get_experiment(&experiment_id)?)
         }
         Commands::GetExperimentByName { experiment_name } => {
-            println!("{:#?}", mlflow.get_experiment_by_name(experiment_name)?)
+            println!("{:#?}", mlflow.get_experiment_by_name(&experiment_name)?)
         }
         Commands::DeleteExperiment { experiment_id } => {
-            println!("{:#?}", mlflow.delete_experiment(experiment_id)?)
+            println!("{:#?}", mlflow.delete_experiment(&experiment_id)?)
         }
         Commands::UpdateExperiment {
             experiment_id,
             new_name,
-        } => println!("{:#?}", mlflow.update_experiment(experiment_id, new_name)?),
+        } => println!(
+            "{:#?}",
+            mlflow.update_experiment(&experiment_id, &new_name)?
+        ),
         Commands::SetExperimentTag {
             experiment_id,
             key,
             value,
         } => println!(
             "{:#?}",
-            mlflow.set_experiment_tag(experiment_id, key, value)?
+            mlflow.set_experiment_tag(&experiment_id, &key, &value)?
         ),
     }
 

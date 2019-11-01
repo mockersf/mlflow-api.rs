@@ -39,9 +39,9 @@ pub enum CreateExperimentErrorCode {
 impl errors::ErrorCode for CreateExperimentErrorCode {}
 
 #[derive(serde::Serialize, Debug)]
-struct CreateExperimentQuery {
-    name: String,
-    artifact_location: Option<String>,
+struct CreateExperimentQuery<'a, 'b> {
+    name: &'a str,
+    artifact_location: Option<&'b str>,
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -82,29 +82,29 @@ struct GetExperimentResponse {
 }
 
 #[derive(serde::Serialize, Debug)]
-struct DeleteExperimentQuery {
-    experiment_id: String,
+struct DeleteExperimentQuery<'a> {
+    experiment_id: &'a str,
 }
 
 #[derive(serde::Deserialize, Debug)]
 struct EmptyResponse {}
 
 #[derive(serde::Serialize, Debug)]
-struct RestoreExperimentQuery {
-    experiment_id: String,
+struct RestoreExperimentQuery<'a> {
+    experiment_id: &'a str,
 }
 
 #[derive(serde::Serialize, Debug)]
-struct UpdateExperimentQuery {
-    experiment_id: String,
-    new_name: String,
+struct UpdateExperimentQuery<'a, 'b> {
+    experiment_id: &'a str,
+    new_name: &'b str,
 }
 
 #[derive(serde::Serialize, Debug)]
-struct SetExperimentTagQuery {
-    experiment_id: String,
-    key: String,
-    value: String,
+struct SetExperimentTagQuery<'a, 'b, 'c> {
+    experiment_id: &'a str,
+    key: &'b str,
+    value: &'c str,
 }
 
 impl MlflowClient {
@@ -113,8 +113,8 @@ impl MlflowClient {
     /// already exists.
     pub fn create_experiment(
         &self,
-        name: String,
-        artifact_location: Option<String>,
+        name: &str,
+        artifact_location: Option<&str>,
     ) -> Result<String, errors::ClientError<CreateExperimentErrorCode>> {
         let req = self
             .client
@@ -156,7 +156,7 @@ impl MlflowClient {
     /// Get metadata for an experiment. This method works on deleted experiments.
     pub fn get_experiment(
         &self,
-        experiment_id: String,
+        experiment_id: &str,
     ) -> Result<Experiment, errors::ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
@@ -176,7 +176,7 @@ impl MlflowClient {
     /// same name, the API will return one of them.
     pub fn get_experiment_by_name(
         &self,
-        experiment_name: String,
+        experiment_name: &str,
     ) -> Result<Experiment, errors::ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
@@ -198,7 +198,7 @@ impl MlflowClient {
     /// uses FileStore, artifacts associated with experiment are also deleted.
     pub fn delete_experiment(
         &self,
-        experiment_id: String,
+        experiment_id: &str,
     ) -> Result<(), errors::ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
@@ -217,7 +217,7 @@ impl MlflowClient {
     /// tags. If experiment uses FileStore, underlying artifacts associated with experiment are also restored.
     pub fn restore_experiment(
         &self,
-        experiment_id: String,
+        experiment_id: &str,
     ) -> Result<(), errors::ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
@@ -235,8 +235,8 @@ impl MlflowClient {
     /// Update experiment metadata.
     pub fn update_experiment(
         &self,
-        experiment_id: String,
-        new_name: String,
+        experiment_id: &str,
+        new_name: &str,
     ) -> Result<(), errors::ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
@@ -257,9 +257,9 @@ impl MlflowClient {
     /// Set a tag on an experiment. Experiment tags are metadata that can be updated.
     pub fn set_experiment_tag(
         &self,
-        experiment_id: String,
-        key: String,
-        value: String,
+        experiment_id: &str,
+        key: &str,
+        value: &str,
     ) -> Result<(), errors::ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
