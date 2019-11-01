@@ -102,6 +102,8 @@ pub trait ErrorCode {}
 pub enum GetExperimentErrorCode {
     /// An experiment with the requested ID could not be found.
     ResourceDoesNotExist,
+    /// An internal error, more information in the associated message.
+    InternalError,
     /// Unknown error.
     #[serde(other)]
     UnknownError,

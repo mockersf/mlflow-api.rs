@@ -1,7 +1,7 @@
 use crate::errors::{
     ClientError, CreateExperimentErrorCode, GetExperimentErrorCode, ListExperimentsErrorCode,
 };
-use crate::{Experiment, MlflowClient, Response, ViewType};
+use crate::{EmptyResponse, Experiment, MlflowClient, Response, ViewType};
 
 #[derive(serde::Serialize, Debug)]
 struct CreateExperimentQuery<'a, 'b> {
@@ -28,9 +28,6 @@ struct GetExperimentResponse {
 struct DeleteExperimentQuery<'a> {
     experiment_id: &'a str,
 }
-
-#[derive(serde::Deserialize, Debug)]
-struct EmptyResponse {}
 
 #[derive(serde::Serialize, Debug)]
 struct RestoreExperimentQuery<'a> {

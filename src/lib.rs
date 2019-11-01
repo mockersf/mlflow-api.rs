@@ -19,6 +19,7 @@ mod client;
 pub use client::MlflowClient;
 pub mod errors;
 mod experiments;
+mod runs;
 
 #[derive(serde::Deserialize, Debug)]
 #[serde(untagged)]
@@ -26,3 +27,6 @@ enum Response<T, E: errors::ErrorCode + std::fmt::Debug + serde::Serialize> {
     Error(errors::ErrorResponse<E>),
     Success(T),
 }
+
+#[derive(serde::Deserialize, Debug)]
+struct EmptyResponse {}
