@@ -4,16 +4,57 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v1
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
-    - name: Run clippy
-      uses: actions-rs/clippy-check@v1.0.0
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: davidB/rust-cargo-make@v1
+        with:
+          version: 0.23.0
+      - uses: actions/checkout@v1
+      - name: Build
+        run: cargo make build
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy
+      - uses: davidB/rust-cargo-make@v1
+        with:
+          version: 0.23.0
+      - uses: actions/checkout@v1
+      - name: Build
+        run: cargo make clippy
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt
+      - uses: davidB/rust-cargo-make@v1
+        with:
+          version: 0.23.0
+      - uses: actions/checkout@v1
+      - name: Build
+        run: cargo make check-format
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt
+      - uses: davidB/rust-cargo-make@v1
+        with:
+          version: 0.23.0
+      - uses: actions/checkout@v1
+      - name: Build
+        run: cargo make full-integration-tests
