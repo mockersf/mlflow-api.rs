@@ -1,3 +1,6 @@
+[env]
+RUST_TEST_THREADS = "1"
+
 [config]
 on_error_task = "stop-full-integration-docker"
 
@@ -9,7 +12,7 @@ script = [
 
 [tasks.test]
 command = "cargo"
-args = ["test", "--features=integration-tests", "--", "--test-threads=1"]
+args = ["test", "--features=integration-tests"]
 
 [tasks.full-integration-tests]
 script = [
@@ -17,8 +20,8 @@ script = [
 PORT=$(( ((RANDOM<<15)|RANDOM) % 63001 + 2000 ))
 docker run -d --rm -p $PORT:5000 --name mlflow-full-integration-tests mockersf/mlflow-test
 sleep 5
-MLFLOW_URL="http://localhost:$PORT" cargo test --features=integration-tests -- --test-threads=1 --ignored --nocapture
-MLFLOW_URL="http://localhost:$PORT" cargo test --features=integration-tests -- --test-threads=1
+MLFLOW_URL="http://localhost:$PORT" cargo test --features=integration-tests -- --ignored
+MLFLOW_URL="http://localhost:$PORT" cargo test --features=integration-tests
 docker stop mlflow-full-integration-tests
 '''
 ]
