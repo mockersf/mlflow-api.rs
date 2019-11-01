@@ -49,3 +49,11 @@ dependencies = [
 [tasks.test-verbose]
 clear = true
 dependencies = ["full-integration-tests"]
+
+[tasks.pre-coverage]
+command = "docker"
+args = ["run", "-d", "--rm", "-p", "5000:5000", "--name", "mlflow-full-integration-tests-coverage", "mockersf/mlflow-test"]
+
+[tasks.post-coverage]
+command = "docker"
+args = ["stop", "mlflow-full-integration-tests-coverage"]
