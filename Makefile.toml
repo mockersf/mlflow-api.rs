@@ -46,6 +46,6 @@ dependencies = [
     "start-test-docker"
 ]
 
-[tasks.test-vebose]
+[tasks.test-verbose]
 clear = true
 dependencies = ["full-integration-tests"]
