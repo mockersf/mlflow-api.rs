@@ -195,18 +195,19 @@ fn can_tag_experiment() {
 }
 
 #[test]
-#[ignore]
-// This test depends on the current state of the mlflow instance.
-// Only run it on a new instance.
-// 'a_' prefix is to that it runs first as tests are alphabetically ordered.
-fn a_can_list_experiments() {
+fn can_list_experiments() {
     let mlflow = mlflow_api::MlflowClient::new(
         std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
     let list = mlflow.list_experiments(None);
-    assert_that!(list).is_ok().has_length(1);
+    assert_that!(list).is_ok();
+    let base_active = list.unwrap().len();
+
+    let list = mlflow.list_experiments(Some(mlflow_api::ViewType::DeletedOnly));
+    assert_that!(list).is_ok();
+    let base_deleted = list.unwrap().len();
 
     let experiment_name: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
     let id = mlflow.create_experiment(&experiment_name, None);
@@ -221,7 +222,7 @@ fn a_can_list_experiments() {
     assert_that!(delete).is_ok();
 
     let list = mlflow.list_experiments(None);
-    assert_that!(list).is_ok().has_length(2);
+    assert_that!(list).is_ok().has_length(base_active + 1);
     assert_that!(list
         .unwrap()
         .iter()
@@ -229,7 +230,7 @@ fn a_can_list_experiments() {
     .contains_all_of(&vec!["0".to_string(), id_1.clone()].iter());
 
     let list = mlflow.list_experiments(Some(mlflow_api::ViewType::ActiveOnly));
-    assert_that!(list).is_ok().has_length(2);
+    assert_that!(list).is_ok().has_length(base_active + 1);
     assert_that!(list
         .unwrap()
         .iter()
@@ -237,7 +238,7 @@ fn a_can_list_experiments() {
     .contains_all_of(&vec!["0".to_string(), id_1.clone()].iter());
 
     let list = mlflow.list_experiments(Some(mlflow_api::ViewType::DeletedOnly));
-    assert_that!(list).is_ok().has_length(1);
+    assert_that!(list).is_ok().has_length(base_deleted + 1);
     assert_that!(list
         .unwrap()
         .iter()
@@ -245,7 +246,9 @@ fn a_can_list_experiments() {
     .contains(&id_2);
 
     let list = mlflow.list_experiments(Some(mlflow_api::ViewType::All));
-    assert_that!(list).is_ok().has_length(3);
+    assert_that!(list)
+        .is_ok()
+        .has_length(base_active + base_deleted + 2);
     assert_that!(list
         .unwrap()
         .iter()
