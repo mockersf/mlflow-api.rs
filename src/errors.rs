@@ -39,6 +39,26 @@ pub enum ClientError<E: ErrorCode> {
     QueryError(reqwest::Error),
 }
 
+#[cfg(feature = "integration-tests")]
+impl<E: ErrorCode + PartialEq> PartialEq for ClientError<E> {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (ClientError::QueryError(_), _) => unimplemented!(),
+            (_, ClientError::QueryError(_)) => unimplemented!(),
+            (
+                ClientError::ApiError {
+                    error_code: error_code_1,
+                    message: message_1,
+                },
+                ClientError::ApiError {
+                    error_code: error_code_2,
+                    message: message_2,
+                },
+            ) => error_code_1 == error_code_2 && message_1 == message_2,
+        }
+    }
+}
+
 impl<'d, E: ErrorCode + std::fmt::Debug + serde::Serialize> std::error::Error for ClientError<E> {}
 
 impl<'d, E: ErrorCode + serde::Serialize> std::fmt::Display for ClientError<E> {

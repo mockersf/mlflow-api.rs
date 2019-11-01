@@ -27,7 +27,7 @@ enum Response<T, E: errors::ErrorCode + std::fmt::Debug + serde::Serialize> {
 }
 
 /// An error that can happen during an `Experiment` creation.
-#[derive(serde::Deserialize, serde::Serialize, Debug, Copy, Clone)]
+#[derive(serde::Deserialize, serde::Serialize, Debug, Copy, Clone, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CreateExperimentErrorCode {
     /// An experiment with the same name already exists.
@@ -50,7 +50,7 @@ struct CreateExperimentResponse {
 }
 
 /// An error that can happen when listing `Experiment`s.
-#[derive(serde::Deserialize, serde::Serialize, Debug, Clone, Copy)]
+#[derive(serde::Deserialize, serde::Serialize, Debug, Clone, Copy, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ListExperimentsErrorCode {
     /// Unknown error.
@@ -65,7 +65,7 @@ struct ListExperimentsResponse {
 }
 
 /// An error that can happen when getting an `Experiment`.
-#[derive(serde::Deserialize, serde::Serialize, Debug, Copy, Clone)]
+#[derive(serde::Deserialize, serde::Serialize, Debug, Copy, Clone, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum GetExperimentErrorCode {
     /// An experiment with the requested ID could not be found.

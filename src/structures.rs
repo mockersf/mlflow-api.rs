@@ -103,7 +103,7 @@ pub struct RunInfo {
 }
 
 /// Life cycle stage of a experiment.
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum LifecycleStage {
     /// Run is active.
@@ -122,7 +122,7 @@ pub struct RunTag {
 }
 
 /// Status of a run.
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum RunStatus {
     /// Run has been initiated.
@@ -138,7 +138,7 @@ pub enum RunStatus {
 }
 
 /// View type for ListExperiments query.
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ViewType {
     /// Default. Return only active experiments.
