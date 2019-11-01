@@ -1,8 +1,7 @@
 /// MLFlow API Client.
 #[derive(Debug)]
 pub struct MlflowClient {
-    /// MLFlow instance url.
-    pub url: String,
+    pub(crate) url: String,
     pub(crate) client: reqwest::Client,
 }
 

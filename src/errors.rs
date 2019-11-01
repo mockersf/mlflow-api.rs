@@ -95,3 +95,37 @@ impl<E: ErrorCode + std::fmt::Debug + serde::Serialize> From<ErrorResponse<E>> f
 
 #[doc(hidden)]
 pub trait ErrorCode {}
+
+/// An error that can happen when getting an `Experiment`.
+#[derive(serde::Deserialize, serde::Serialize, Debug, Copy, Clone, PartialEq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum GetExperimentErrorCode {
+    /// An experiment with the requested ID could not be found.
+    ResourceDoesNotExist,
+    /// Unknown error.
+    #[serde(other)]
+    UnknownError,
+}
+impl ErrorCode for GetExperimentErrorCode {}
+
+/// An error that can happen during an `Experiment` creation.
+#[derive(serde::Deserialize, serde::Serialize, Debug, Copy, Clone, PartialEq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CreateExperimentErrorCode {
+    /// An experiment with the same name already exists.
+    ResourceAlreadyExists,
+    /// Unknown error.
+    #[serde(other)]
+    UnknownError,
+}
+impl ErrorCode for CreateExperimentErrorCode {}
+
+/// An error that can happen when listing `Experiment`s.
+#[derive(serde::Deserialize, serde::Serialize, Debug, Clone, Copy, PartialEq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ListExperimentsErrorCode {
+    /// Unknown error.
+    #[serde(other)]
+    UnknownError,
+}
+impl ErrorCode for ListExperimentsErrorCode {}

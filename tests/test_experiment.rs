@@ -34,7 +34,7 @@ fn cant_create_2_experiments_with_same_name() {
     assert_that!(id2)
         .is_err()
         .is_equal_to(mlflow_api::errors::ClientError::ApiError {
-            error_code: mlflow_api::CreateExperimentErrorCode::ResourceAlreadyExists,
+            error_code: mlflow_api::errors::CreateExperimentErrorCode::ResourceAlreadyExists,
             message: format!("Experiment '{}' already exists.", experiment_name),
         });
 
