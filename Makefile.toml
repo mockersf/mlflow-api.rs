@@ -20,8 +20,7 @@ script = [
 PORT=$(( ((RANDOM<<15)|RANDOM) % 63001 + 2000 ))
 docker run -d --rm -p $PORT:5000 --name mlflow-full-integration-tests mockersf/mlflow-test
 sleep 5
-MLFLOW_URL="http://localhost:$PORT" cargo test --features=integration-tests -- --ignored
-MLFLOW_URL="http://localhost:$PORT" cargo test --features=integration-tests
+MLFLOW_URL="http://localhost:$PORT" cargo test --features=integration-tests -- --include-ignored -Zunstable-options
 docker stop mlflow-full-integration-tests
 '''
 ]

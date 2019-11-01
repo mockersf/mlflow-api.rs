@@ -198,7 +198,8 @@ fn can_tag_experiment() {
 #[ignore]
 // This test depends on the current state of the mlflow instance.
 // Only run it on a new instance.
-fn can_list_experiments() {
+// 'a_' prefix is to that it runs first as tests are alphabetically ordered.
+fn a_can_list_experiments() {
     let mlflow = mlflow_api::MlflowClient::new(
         std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
