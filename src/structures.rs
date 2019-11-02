@@ -19,6 +19,12 @@ where
                 serde::de::Error::invalid_type(serde::de::Unexpected::Str(v), &"a int in a string")
             })
         }
+        fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(v)
+        }
     }
     deserializer.deserialize_any(U64StringVisitor)
 }
@@ -185,4 +191,81 @@ pub enum ViewType {
     DeletedOnly,
     /// Get all experiments.
     All,
+}
+
+#[cfg(test)]
+mod tests {
+    use serde::Deserialize;
+    use spectral::prelude::*;
+
+    use super::{u64_deserializer_in_string, u64_deserializer_in_string_opt};
+
+    #[test]
+    fn can_deserialize_string_to_u64() {
+        #[derive(Deserialize, Debug, PartialEq)]
+        struct Test {
+            #[serde(deserialize_with = "u64_deserializer_in_string")]
+            test: u64,
+            #[serde(default)]
+            #[serde(deserialize_with = "u64_deserializer_in_string_opt")]
+            test_opt: Option<u64>,
+        }
+
+        assert_that!(serde_json::from_str::<Test>(r#"{"test": "42"}"#))
+            .is_ok()
+            .is_equal_to(Test {
+                test: 42,
+                test_opt: None,
+            });
+
+        assert_that!(serde_json::from_str::<Test>(
+            r#"{"test": 42, "test_opt": null}"#
+        ))
+        .is_ok()
+        .is_equal_to(Test {
+            test: 42,
+            test_opt: None,
+        });
+
+        assert_that!(serde_json::from_str::<Test>(
+            r#"{"test": 42, "test_opt": "43"}"#
+        ))
+        .is_ok()
+        .is_equal_to(Test {
+            test: 42,
+            test_opt: Some(43),
+        });
+
+        assert_that!(serde_json::from_str::<Test>(
+            r#"{"test": 42, "test_opt": 43}"#
+        ))
+        .is_ok()
+        .is_equal_to(Test {
+            test: 42,
+            test_opt: Some(43),
+        });
+    }
+
+    #[test]
+    fn should_fail_deserialize_with_invalid_value() {
+        #[derive(Deserialize, Debug, PartialEq)]
+        struct Test {
+            #[serde(deserialize_with = "u64_deserializer_in_string")]
+            test: u64,
+            #[serde(default)]
+            #[serde(deserialize_with = "u64_deserializer_in_string_opt")]
+            test_opt: Option<u64>,
+        }
+
+        assert_that!(serde_json::from_str::<Test>(r#"{"test": "a"}"#)).is_err();
+        assert_that!(serde_json::from_str::<Test>(r#"{"test": [1, 2]}"#)).is_err();
+        assert_that!(serde_json::from_str::<Test>(
+            r#"{"test": "1", "test_opt": "a"}"#
+        ))
+        .is_err();
+        assert_that!(serde_json::from_str::<Test>(
+            r#"{"test": "1", "test_opt": [1, 2]}"#
+        ))
+        .is_err();
+    }
 }
