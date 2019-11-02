@@ -64,6 +64,25 @@ fn can_get_experiment() {
 }
 
 #[test]
+#[cfg(feature = "integration-tests")]
+fn cant_get_unknown_experiment() {
+    let experiment_id: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
+
+    let mlflow = mlflow_api::MlflowClient::new(
+        std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+    )
+    .unwrap();
+
+    let experiment = mlflow.get_experiment(&experiment_id);
+    assert_that!(experiment)
+        .is_err()
+        .is_equal_to(mlflow_api::errors::ClientError::ApiError {
+            error_code: mlflow_api::errors::GetExperimentErrorCode::ResourceDoesNotExist,
+            message: format!("Could not find experiment with ID {}", experiment_id),
+        });
+}
+
+#[test]
 fn can_get_experiment_by_name() {
     let experiment_name: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
 

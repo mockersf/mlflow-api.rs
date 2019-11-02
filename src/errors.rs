@@ -6,7 +6,6 @@ pub enum SetupError {
     /// URL is invalid.
     InvalidUrl(String),
 }
-// pub struct InvalidUrl(pub String);
 
 impl std::error::Error for SetupError {}
 impl std::fmt::Display for SetupError {
