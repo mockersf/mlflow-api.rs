@@ -58,7 +58,7 @@ enum Commands {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opt = Opt::from_args();
 
-    let mlflow = mlflow_api::MlflowClient::new(opt.url)?;
+    let mlflow = mlflow_api::MlflowClient::new(&opt.url)?;
     match opt.command {
         Commands::CreateExperiment { name } => {
             println!("{:#?}", mlflow.create_experiment(&name, None)?);

@@ -1,7 +1,7 @@
 //! Errors
 
 /// An error at the creation of the client
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum SetupError {
     /// URL is invalid.
     InvalidUrl(String),
