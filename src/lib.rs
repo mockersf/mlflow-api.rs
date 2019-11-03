@@ -19,6 +19,7 @@ mod client;
 pub use client::MlflowClient;
 pub mod errors;
 mod experiments;
+mod run_data;
 mod runs;
 
 #[derive(serde::Deserialize, Debug)]
