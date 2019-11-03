@@ -164,7 +164,7 @@ pub enum LifecycleStage {
 }
 
 /// Tag for a run.
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct RunTag {
     /// The tag key.
     pub key: String,
