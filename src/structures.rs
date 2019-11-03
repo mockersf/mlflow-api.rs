@@ -85,7 +85,7 @@ pub struct FileInfo {
 }
 
 /// Metric associated with a run, represented as a key-value pair.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Metric {
     /// Key identifying this metric.
     pub key: String,
@@ -100,7 +100,7 @@ pub struct Metric {
 }
 
 /// Param associated with a run.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Param {
     /// Key identifying this param.
     pub key: String,

@@ -147,65 +147,6 @@ fn can_update_run() {
 }
 
 #[test]
-fn can_manage_run_tags() {
-    let experiment_name: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
-    let key: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
-    let value1: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
-    let value2: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
-
-    let mlflow = mlflow_api::MlflowClient::new(
-        &std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
-    )
-    .unwrap();
-
-    let id = mlflow.create_experiment(&experiment_name, None);
-    assert_that!(id).is_ok();
-    let id = id.unwrap();
-
-    let run = mlflow.create_run(&id, Some(514425600000), None);
-    assert_that!(run).is_ok();
-    let run_id = run.unwrap().info.run_id;
-
-    let set = mlflow.set_run_tag(&run_id, &key, &value1);
-    assert_that!(set).is_ok();
-    let run = mlflow.get_run(&run_id);
-    assert_that!(run)
-        .is_ok()
-        .map(|run| &run.data)
-        .is_some()
-        .map(|data| &data.tags)
-        .contains(mlflow_api::RunTag {
-            key: key.clone(),
-            value: value1,
-        });
-
-    let set = mlflow.set_run_tag(&run_id, &key, &value2);
-    assert_that!(set).is_ok();
-    let run = mlflow.get_run(&run_id);
-    assert_that!(run)
-        .is_ok()
-        .map(|run| &run.data)
-        .is_some()
-        .map(|data| &data.tags)
-        .contains(mlflow_api::RunTag {
-            key: key.clone(),
-            value: value2,
-        });
-
-    let set = mlflow.delete_run_tag(&run_id, &key);
-    assert_that!(set).is_ok();
-    let run = mlflow.get_run(&run_id);
-    assert_that!(run)
-        .is_ok()
-        .map(|run| &run.data)
-        .is_some()
-        .map(|data| &data.tags)
-        .has_length(0);
-
-    mlflow.delete_experiment(&id).unwrap();
-}
-
-#[test]
 fn can_search_for_runs() {
     let experiment_name_1: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
     let experiment_name_2: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
