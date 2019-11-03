@@ -52,8 +52,12 @@ pub struct Experiment {
     /// Current life cycle stage of the experiment: “active” or “deleted”. Deleted experiments are not returned by APIs.
     pub lifecycle_stage: LifecycleStage,
     /// Last update time
+    #[serde(default)]
+    #[serde(deserialize_with = "u64_deserializer_in_string_opt")]
     pub last_update_time: Option<u64>,
     /// Creation time
+    #[serde(default)]
+    #[serde(deserialize_with = "u64_deserializer_in_string_opt")]
     pub creation_time: Option<u64>,
     /// Additional metadata key-value pairs.
     pub tags: Option<Vec<ExperimentTag>>,
@@ -76,6 +80,7 @@ pub struct FileInfo {
     /// Whether the path is a directory.
     pub is_dir: bool,
     /// Size in bytes. Unset for directories.
+    #[serde(deserialize_with = "u64_deserializer_in_string")]
     pub file_size: u64,
 }
 
@@ -87,8 +92,10 @@ pub struct Metric {
     /// Value associated with this metric.
     pub value: f32,
     /// The timestamp at which this metric was recorded.
+    #[serde(deserialize_with = "u64_deserializer_in_string")]
     pub timestamp: u64,
     /// Step at which to log the metric.
+    #[serde(deserialize_with = "u64_deserializer_in_string")]
     pub step: u64,
 }
 
