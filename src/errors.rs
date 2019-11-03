@@ -103,6 +103,8 @@ pub enum GetExperimentErrorCode {
     ResourceDoesNotExist,
     /// An internal error, more information in the associated message.
     InternalError,
+    /// A parameter has an invalid value
+    InvalidParameterValue,
     /// Unknown error.
     #[serde(other)]
     UnknownError,

@@ -1,5 +1,7 @@
 use crate::errors::{ClientError, GetExperimentErrorCode};
-use crate::{send_and_return_field, EmptyResponse, MlflowClient, Run, RunInfo, RunStatus, RunTag};
+use crate::{
+    send_and_return_field, EmptyResponse, MlflowClient, Run, RunInfo, RunStatus, RunTag, ViewType,
+};
 
 #[derive(serde::Serialize, Debug)]
 struct CreateRunQuery<'a> {
@@ -51,6 +53,22 @@ struct SetRunTagQuery<'a, 'b, 'c> {
 struct DeleteRunTagQuery<'a, 'b> {
     run_id: &'a str,
     key: &'b str,
+}
+
+#[derive(serde::Serialize, Debug)]
+struct SearchRunsQuery<'a, 'b, 'c, 'd> {
+    experiment_ids: &'c [&'d str],
+    filter: Option<&'a str>,
+    run_view_type: Option<ViewType>,
+    max_results: Option<u32>,
+    order_by: Option<Vec<String>>,
+    page_token: Option<&'b str>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+struct SearchRunsResponse {
+    runs: Vec<Run>,
+    next_page_token: Option<String>,
 }
 
 impl MlflowClient {
@@ -145,5 +163,31 @@ impl MlflowClient {
             .post(&format!("{}/api/2.0/mlflow/runs/delete-tag", self.url))
             .json(&DeleteRunTagQuery { run_id, key });
         send_and_return_field(req, |_: EmptyResponse| ())
+    }
+
+    /// Search for runs that satisfy expressions. Search expressions can use Metric and Param keys.
+    pub fn search_runs(
+        &self,
+        experiment_ids: &[&str],
+        filter: Option<&str>,
+        run_view_type: Option<ViewType>,
+        max_results: Option<u32>,
+        order_by: Option<Vec<String>>,
+        page_token: Option<&str>,
+    ) -> Result<(Vec<Run>, Option<String>), ClientError<GetExperimentErrorCode>> {
+        let req = self
+            .client
+            .post(&format!("{}/api/2.0/mlflow/runs/search", self.url))
+            .json(&SearchRunsQuery {
+                experiment_ids,
+                filter,
+                run_view_type,
+                max_results,
+                order_by,
+                page_token,
+            });
+        send_and_return_field(req, |resp: SearchRunsResponse| {
+            (resp.runs, resp.next_page_token)
+        })
     }
 }

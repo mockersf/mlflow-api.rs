@@ -53,6 +53,11 @@ enum Commands {
         #[structopt(help = "Value of the tag")]
         value: String,
     },
+    #[structopt(about = "Create an run for an experiment")]
+    CreateRun {
+        #[structopt(help = "ID of the experiment for the new run")]
+        experiment_id: String,
+    },
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -88,6 +93,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "{:#?}",
             mlflow.set_experiment_tag(&experiment_id, &key, &value)?
         ),
+        Commands::CreateRun { experiment_id } => {
+            println!(
+                "{:#?}",
+                mlflow.create_run(
+                    &experiment_id,
+                    Some(
+                        std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .expect("time went strange there")
+                            .as_millis() as u64
+                    ),
+                    None
+                )?
+            );
+        }
     }
 
     Ok(())

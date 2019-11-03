@@ -201,4 +201,73 @@ fn can_manage_run_tags() {
         .is_some()
         .map(|data| &data.tags)
         .has_length(0);
+
+    mlflow.delete_experiment(&id).unwrap();
+}
+
+#[test]
+fn can_search_for_runs() {
+    let experiment_name_1: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
+    let experiment_name_2: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
+
+    let mlflow = mlflow_api::MlflowClient::new(
+        &std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+    )
+    .unwrap();
+
+    let id = mlflow.create_experiment(&experiment_name_1, None);
+    assert_that!(id).is_ok();
+    let id_1 = id.unwrap();
+
+    let id = mlflow.create_experiment(&experiment_name_2, None);
+    assert_that!(id).is_ok();
+    let id_2 = id.unwrap();
+
+    let run = mlflow.create_run(
+        &id_1,
+        Some(
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("time went strange there")
+                .as_millis() as u64,
+        ),
+        None,
+    );
+    assert_that!(run).is_ok();
+
+    let run = mlflow.create_run(
+        &id_2,
+        Some(
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("time went strange there")
+                .as_millis() as u64,
+        ),
+        None,
+    );
+    assert_that!(run).is_ok();
+
+    let run = mlflow.create_run(
+        &id_2,
+        Some(
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("time went strange there")
+                .as_millis() as u64,
+        ),
+        None,
+    );
+    assert_that!(run).is_ok();
+
+    let runs = mlflow.search_runs(&[&id_1], None, None, None, None, None);
+    assert_that!(runs).is_ok().map(|runs| &runs.0).has_length(1);
+
+    let runs = mlflow.search_runs(&[&id_2], None, None, None, None, None);
+    assert_that!(runs).is_ok().map(|runs| &runs.0).has_length(2);
+
+    let runs = mlflow.search_runs(&[&id_1, &id_2], None, None, None, None, None);
+    assert_that!(runs).is_ok().map(|runs| &runs.0).has_length(3);
+
+    mlflow.delete_experiment(&id_1).unwrap();
+    mlflow.delete_experiment(&id_2).unwrap();
 }
