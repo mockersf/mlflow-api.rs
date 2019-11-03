@@ -1,7 +1,7 @@
 use crate::errors::{
     ClientError, CreateExperimentErrorCode, GetExperimentErrorCode, ListExperimentsErrorCode,
 };
-use crate::{EmptyResponse, Experiment, MlflowClient, Response, ViewType};
+use crate::{send_and_return_field, EmptyResponse, Experiment, MlflowClient, ViewType};
 
 #[derive(serde::Serialize, Debug)]
 struct CreateExperimentQuery<'a, 'b> {
@@ -63,13 +63,7 @@ impl MlflowClient {
                 name,
                 artifact_location,
             });
-        match req
-            .send()?
-            .json::<Response<CreateExperimentResponse, CreateExperimentErrorCode>>()?
-        {
-            Response::Success(resp) => Ok(resp.experiment_id),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |resp: CreateExperimentResponse| resp.experiment_id)
     }
 
     /// Get a list of all experiments.
@@ -83,14 +77,7 @@ impl MlflowClient {
         if let Some(view_type) = view_type {
             req = req.query(&[("view_type", view_type)]);
         }
-
-        match req
-            .send()?
-            .json::<Response<ListExperimentsResponse, ListExperimentsErrorCode>>()?
-        {
-            Response::Success(resp) => Ok(resp.experiments),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |resp: ListExperimentsResponse| resp.experiments)
     }
 
     /// Get metadata for an experiment. This method works on deleted experiments.
@@ -102,13 +89,7 @@ impl MlflowClient {
             .client
             .get(&format!("{}/api/2.0/mlflow/experiments/get", self.url))
             .query(&[("experiment_id", experiment_id)]);
-        match req
-            .send()?
-            .json::<Response<GetExperimentResponse, GetExperimentErrorCode>>()?
-        {
-            Response::Success(resp) => Ok(resp.experiment),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |resp: GetExperimentResponse| resp.experiment)
     }
 
     /// Get metadata for an experiment. This endpoint will return deleted experiments, but prefers the active
@@ -125,13 +106,7 @@ impl MlflowClient {
                 self.url
             ))
             .query(&[("experiment_name", experiment_name)]);
-        match req
-            .send()?
-            .json::<Response<GetExperimentResponse, GetExperimentErrorCode>>()?
-        {
-            Response::Success(resp) => Ok(resp.experiment),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |resp: GetExperimentResponse| resp.experiment)
     }
 
     /// Mark an experiment and associated metadata, runs, metrics, params, and tags for deletion. If the experiment
@@ -144,13 +119,7 @@ impl MlflowClient {
             .client
             .post(&format!("{}/api/2.0/mlflow/experiments/delete", self.url))
             .json(&DeleteExperimentQuery { experiment_id });
-        match req
-            .send()?
-            .json::<Response<EmptyResponse, GetExperimentErrorCode>>()?
-        {
-            Response::Success(_resp) => Ok(()),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |_: EmptyResponse| ())
     }
 
     /// Restore an experiment marked for deletion. This also restores associated metadata, runs, metrics, params, and
@@ -163,13 +132,7 @@ impl MlflowClient {
             .client
             .post(&format!("{}/api/2.0/mlflow/experiments/restore", self.url))
             .json(&RestoreExperimentQuery { experiment_id });
-        match req
-            .send()?
-            .json::<Response<EmptyResponse, GetExperimentErrorCode>>()?
-        {
-            Response::Success(_resp) => Ok(()),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |_: EmptyResponse| ())
     }
 
     /// Update experiment metadata.
@@ -185,13 +148,7 @@ impl MlflowClient {
                 experiment_id,
                 new_name,
             });
-        match req
-            .send()?
-            .json::<Response<EmptyResponse, GetExperimentErrorCode>>()?
-        {
-            Response::Success(_resp) => Ok(()),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |_: EmptyResponse| ())
     }
 
     /// Set a tag on an experiment. Experiment tags are metadata that can be updated.
@@ -212,12 +169,6 @@ impl MlflowClient {
                 key,
                 value,
             });
-        match req
-            .send()?
-            .json::<Response<EmptyResponse, GetExperimentErrorCode>>()?
-        {
-            Response::Success(_resp) => Ok(()),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |_: EmptyResponse| ())
     }
 }

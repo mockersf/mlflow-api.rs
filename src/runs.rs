@@ -1,5 +1,5 @@
 use crate::errors::{ClientError, GetExperimentErrorCode};
-use crate::{EmptyResponse, MlflowClient, Response, Run, RunInfo, RunStatus, RunTag};
+use crate::{send_and_return_field, EmptyResponse, MlflowClient, Run, RunInfo, RunStatus, RunTag};
 
 #[derive(serde::Serialize, Debug)]
 struct CreateRunQuery<'a> {
@@ -57,13 +57,7 @@ impl MlflowClient {
                 start_time,
                 tags,
             });
-        match req
-            .send()?
-            .json::<Response<CreateRunResponse, GetExperimentErrorCode>>()?
-        {
-            Response::Success(resp) => Ok(resp.run),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |resp: CreateRunResponse| resp.run)
     }
 
     /// Mark a run for deletion.
@@ -72,13 +66,7 @@ impl MlflowClient {
             .client
             .post(&format!("{}/api/2.0/mlflow/runs/delete", self.url))
             .json(&DeleteRunQuery { run_id });
-        match req
-            .send()?
-            .json::<Response<EmptyResponse, GetExperimentErrorCode>>()?
-        {
-            Response::Success(_resp) => Ok(()),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |_: EmptyResponse| ())
     }
 
     /// Restore a deleted run.
@@ -87,13 +75,7 @@ impl MlflowClient {
             .client
             .post(&format!("{}/api/2.0/mlflow/runs/restore", self.url))
             .json(&RestoreRunQuery { run_id });
-        match req
-            .send()?
-            .json::<Response<EmptyResponse, GetExperimentErrorCode>>()?
-        {
-            Response::Success(_resp) => Ok(()),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |_: EmptyResponse| ())
     }
 
     /// Get metadata, metrics, params, and tags for a run. In the case where multiple metrics with the same key are
@@ -104,13 +86,7 @@ impl MlflowClient {
             .client
             .get(&format!("{}/api/2.0/mlflow/runs/get", self.url))
             .query(&[("run_id", run_id)]);
-        match req
-            .send()?
-            .json::<Response<GetRunResponse, GetExperimentErrorCode>>()?
-        {
-            Response::Success(resp) => Ok(resp.run),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |resp: GetRunResponse| resp.run)
     }
 
     /// Restore a deleted run.
@@ -128,12 +104,6 @@ impl MlflowClient {
                 status,
                 end_time,
             });
-        match req
-            .send()?
-            .json::<Response<UpdateRunResponse, GetExperimentErrorCode>>()?
-        {
-            Response::Success(resp) => Ok(resp.run_info),
-            Response::Error(err) => Err(err.into()),
-        }
+        send_and_return_field(req, |resp: UpdateRunResponse| resp.run_info)
     }
 }
