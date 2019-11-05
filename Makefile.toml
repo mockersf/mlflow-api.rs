@@ -80,13 +80,22 @@ script = [
 set -ex
 whoami
 pwd
+sleep 1
 ls -lrtha
+sleep 1
 echo $CARGO_MAKE_WORKING_DIRECTORY
+sleep 1
 echo $MLFLOW_PATH
+sleep 1
 echo $GITHUB_WORKSPACE
+sleep 1
 ls -lrtha $MLFLOW_PATH
-sudo touch $MLFLOW_PATH/test_file
-sudo mkdir -p $MLFLOW_PATH/tmp/./mlruns/16/a2c1bec997f049c19f9713f324d87478/artifacts/l5IBlJ4LevcVYGZhHGturiAfijxJsl
+sleep 1
+touch $MLFLOW_PATH/test_file
+sleep 1
+mkdir -p $MLFLOW_PATH/tmp/./mlruns/16/a2c1bec997f049c19f9713f324d87478/artifacts/l5IBlJ4LevcVYGZhHGturiAfijxJsl
+sleep 1
+ls -lrtha $MLFLOW_PATH
 '''
 ]
 dependencies = [
@@ -123,9 +132,10 @@ dependencies = [
 condition = { env_set = [ "GITHUB_WORKSPACE" ] }
 script = [
 '''
-sudo chmod -r 777 ${CARGO_MAKE_WORKING_DIRECTORY}/tmp
+sudo chmod -R 777 ${CARGO_MAKE_WORKING_DIRECTORY}/tmp
 '''
 ]
+
 [tasks.start-integration-docker]
 command = "docker"
 args = [
