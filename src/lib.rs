@@ -61,7 +61,7 @@ mod tests {
     use super::send_and_return_field;
 
     #[test]
-    fn zut() {
+    fn can_cast_reqwest_error() {
         #[derive(Serialize, Deserialize, Debug)]
         struct CustomError;
         impl crate::errors::ErrorCode for CustomError {};
