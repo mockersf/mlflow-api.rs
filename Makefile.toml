@@ -67,7 +67,6 @@ dependencies = [
 dependencies = [
     "pre-coverage",
     "delay-5-secs",
-    "debug-env",
     "full-integration-tests-run",
     "post-coverage"
 ]
@@ -79,8 +78,9 @@ MLFLOW_URL = "http://localhost:5050"
 script = [
 '''
 set -ex
+whoami
 pwd
-ls
+ls -lrtha
 echo $CARGO_MAKE_WORKING_DIRECTORY
 echo $MLFLOW_PATH
 echo $GITHUB_WORKSPACE
