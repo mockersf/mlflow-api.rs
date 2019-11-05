@@ -108,6 +108,25 @@ dependencies = ["full-integration-tests"]
 
 [tasks.pre-coverage]
 # add pre-coverage config to start docker
+dependencies = [
+    "start-integration-docker",
+    "enable-write-on-github"
+]
+
+[tasks.post-coverage]
+# add post-coverage config to stop docker
+dependencies = [
+    "stop-integration-docker"
+]
+
+[tasks.enable-write-on-github]
+condition = { env_set = [ "GITHUB_WORKSPACE" ] }
+script = [
+'''
+sudo chmod -r 777 ${CARGO_MAKE_WORKING_DIRECTORY}/tmp
+'''
+]
+[tasks.start-integration-docker]
 command = "docker"
 args = [
     "run", "-d", "--rm",
@@ -117,8 +136,7 @@ args = [
     "mockersf/mlflow-test"
 ]
 
-[tasks.post-coverage]
-# add post-coverage config to stop docker
+[tasks.stop-integration-docker]
 command = "docker"
 args = ["stop", "mlflow-full-integration-tests"]
 
