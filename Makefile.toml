@@ -84,7 +84,13 @@ ls -lrtha
 echo $CARGO_MAKE_WORKING_DIRECTORY
 echo $MLFLOW_PATH
 echo $GITHUB_WORKSPACE
+ls $MLFLOW_PATH
+touch $MLFLOW_PATH/test_file
+mkdir -p $MLFLOW_PATH/tmp/./mlruns/16/a2c1bec997f049c19f9713f324d87478/artifacts/l5IBlJ4LevcVYGZhHGturiAfijxJsl
 '''
+]
+dependencies = [
+    "pre-coverage"
 ]
 
 
