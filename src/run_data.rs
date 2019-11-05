@@ -1,5 +1,5 @@
 use crate::errors::{ClientError, GetExperimentErrorCode};
-use crate::{send_and_return_field, EmptyResponse, Metric, MlflowClient, Param, RunTag};
+use crate::{send_and_return_field, EmptyResponse, FileInfo, Metric, MlflowClient, Param, RunTag};
 
 #[derive(serde::Serialize, Debug)]
 struct SetRunTagQuery<'a, 'b, 'c> {
@@ -41,6 +41,13 @@ struct LogBatchQuery<'a, 'b, 'c, 'd, 'e, 'f, 'g> {
     metrics: Option<&'b [&'c Metric]>,
     params: Option<&'d [&'e Param]>,
     tags: Option<&'f [&'g RunTag]>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+struct ListArtifactsResponse {
+    root_uri: String,
+    #[serde(default)]
+    files: Vec<FileInfo>,
 }
 
 impl MlflowClient {
@@ -144,5 +151,25 @@ impl MlflowClient {
                 tags,
             });
         send_and_return_field(req, |_: EmptyResponse| ())
+    }
+
+    /// List artifacts for a run. Takes an optional artifact_path prefix which if specified, the response contains only
+    /// artifacts with the specified prefix.
+    pub fn list_artifacts(
+        &self,
+        run_id: &str,
+        path: Option<&str>,
+    ) -> Result<(String, Vec<FileInfo>), ClientError<GetExperimentErrorCode>> {
+        let req = self
+            .client
+            .get(&format!("{}/api/2.0/mlflow/artifacts/list", self.url));
+        let req = if let Some(path) = path {
+            req.query(&[("run_id", run_id), ("path", path)])
+        } else {
+            req.query(&[("run_id", run_id)])
+        };
+        send_and_return_field(req, |resp: ListArtifactsResponse| {
+            (resp.root_uri, resp.files)
+        })
     }
 }

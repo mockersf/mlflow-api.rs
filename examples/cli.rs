@@ -58,6 +58,11 @@ enum Commands {
         #[structopt(help = "ID of the experiment for the new run")]
         experiment_id: String,
     },
+    #[structopt(about = "List artifacts of a run")]
+    ListArtifacts {
+        #[structopt(help = "ID of the run to list artifacts of")]
+        run_id: String,
+    },
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -107,6 +112,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     None
                 )?
             );
+        }
+        Commands::ListArtifacts { run_id } => {
+            println!("{:#?}", mlflow.list_artifacts(&run_id, None)?);
         }
     }
 

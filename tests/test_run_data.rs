@@ -1,3 +1,6 @@
+use std::fs::File;
+use std::io::prelude::*;
+
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use spectral::prelude::*;
@@ -376,6 +379,62 @@ fn can_log_batch() {
         .is_some()
         .map(|data| &data.tags)
         .has_length(1);
+
+    mlflow.delete_experiment(&id).unwrap();
+}
+
+#[test]
+fn can_list_artifacts() {
+    let experiment_name: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
+    let file_name: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
+    let content: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
+
+    let mlflow = mlflow_api::MlflowClient::new(
+        &std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+    )
+    .unwrap();
+    let storage = std::env::var("MLFLOW_PATH").unwrap_or_else(|_| "/tmp/mlruns".to_string());
+
+    let id = mlflow.create_experiment(&experiment_name, None);
+    assert_that!(id).is_ok();
+    let id = id.unwrap();
+
+    let run = mlflow.create_run(
+        &id,
+        Some(
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("time went strange there")
+                .as_millis() as u64,
+        ),
+        None,
+    );
+    assert_that!(run).is_ok();
+    let run_id = run.unwrap().info.run_id;
+
+    let artifacts = mlflow.list_artifacts(&run_id, None);
+    assert_that!(artifacts)
+        .is_ok()
+        .map(|artifacts| &artifacts.1)
+        .has_length(0);
+    let root_uri = artifacts.unwrap().0;
+
+    let mut file = File::create(format!("{}/{}/{}", storage, root_uri, file_name)).unwrap();
+    file.write_all(content.as_bytes()).unwrap();
+
+    let artifacts = mlflow.list_artifacts(&run_id, None);
+    assert_that!(artifacts)
+        .is_ok()
+        .map(|artifacts| &artifacts.1)
+        .has_length(1);
+    assert_that!(artifacts)
+        .is_ok()
+        .map(|artifacts| &artifacts.1)
+        .contains(mlflow_api::FileInfo {
+            path: file_name,
+            is_dir: false,
+            file_size: Some(30),
+        });
 
     mlflow.delete_experiment(&id).unwrap();
 }

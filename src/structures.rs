@@ -73,15 +73,16 @@ pub struct ExperimentTag {
 }
 
 /// Metadata of a single artifact file or directory.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, PartialEq)]
 pub struct FileInfo {
     /// Path relative to the root artifact directory run.
     pub path: String,
     /// Whether the path is a directory.
     pub is_dir: bool,
     /// Size in bytes. Unset for directories.
-    #[serde(deserialize_with = "u64_deserializer_in_string")]
-    pub file_size: u64,
+    #[serde(default)]
+    #[serde(deserialize_with = "u64_deserializer_in_string_opt")]
+    pub file_size: Option<u64>,
 }
 
 /// Metric associated with a run, represented as a key-value pair.
