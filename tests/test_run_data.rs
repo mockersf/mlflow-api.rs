@@ -419,8 +419,26 @@ fn can_list_artifacts() {
         .has_length(0);
     let root_uri = artifacts.unwrap().0;
 
-    let mut file = File::create(dbg!(format!("{}/{}/{}", storage, root_uri, file_name))).unwrap();
-    file.write_all(content.as_bytes()).unwrap();
+    if let Some(github_dir) = std::env::var("GITHUB_WORKSPACE") {
+        let mut file =
+            File::create(format!("{}/{}", github_dir, file_name)).expect("error creating file");
+        file.write_all(content.as_bytes())
+            .expect("error writing file");
+        std::process::Command::new("docker")
+            .arg("cp")
+            .arg(file_name.clone())
+            .arg(format!(
+                "mlflow-full-integration-tests:/mlflow/{}/{}",
+                root_uri, file_name
+            ))
+            .output()
+            .expect("error copying file to docker");
+    } else {
+        let mut file = File::create(format!("{}/{}/{}", storage, root_uri, file_name))
+            .expect("error creating file");
+        file.write_all(content.as_bytes())
+            .expect("error writing file");
+    }
 
     let artifacts = mlflow.list_artifacts(&run_id, None);
     assert_that!(artifacts)
