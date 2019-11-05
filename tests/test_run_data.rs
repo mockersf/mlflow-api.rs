@@ -419,7 +419,7 @@ fn can_list_artifacts() {
         .has_length(0);
     let root_uri = artifacts.unwrap().0;
 
-    if let Some(github_dir) = std::env::var("GITHUB_WORKSPACE") {
+    if let Ok(github_dir) = std::env::var("GITHUB_WORKSPACE") {
         let mut file =
             File::create(format!("{}/{}", github_dir, file_name)).expect("error creating file");
         file.write_all(content.as_bytes())
