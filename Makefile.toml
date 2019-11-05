@@ -1,35 +1,27 @@
 [env]
 RUST_TEST_THREADS = "1"
 
-[config]
-on_error_task = "stop-full-integration-docker"
+### Entry points:
+# cargo make test-and-clean # will start test docker, run tests, cargo fmt, cargo clippy, build doc, and clean docker
+# cargo make full-integration-tests # will run tests as in CI
 
-[tasks.stop-full-integration-docker]
-ignore_errors = true
-script = [
-    "docker stop mlflow-full-integration-tests"
-]
+[tasks.delay-5-secs]
+command = "sleep"
+args = [ "5" ]
 
-[tasks.test]
-command = "cargo"
-args = ["test", "--features=integration-tests"]
-
-[tasks.full-integration-tests]
-script = [
-'''
-PORT=$(( ((RANDOM<<15)|RANDOM) % 63001 + 2000 ))
-docker run -d --rm -p $PORT:5000 --name mlflow-full-integration-tests mockersf/mlflow-test
-sleep 5
-MLFLOW_URL="http://localhost:$PORT" cargo test --features=integration-tests
-docker stop mlflow-full-integration-tests
-'''
-]
+### Tasks for local docker management
 
 [tasks.start-test-docker]
+condition_script = [
+    "! docker inspect -f '{{.State.Running}}' mlflow-test"
+]
 command = "docker"
 args = ["run", "--name", "mlflow-test", "-d", "--rm", "-v", "/tmp/mlruns:/mlflow/", "-p", "5000:5000", "mockersf/mlflow-test"]
 
 [tasks.stop-test-docker]
+condition_script = [
+    "docker inspect -f '{{.State.Running}}' mlflow-test"
+]
 command = "docker"
 args = ["stop", "mlflow-test"]
 
@@ -45,14 +37,66 @@ dependencies = [
     "start-test-docker"
 ]
 
+### Tasks for local tests
+
+[tasks.test]
+env = { "MLFLOW_PATH" = "/tmp/mlruns" }
+command = "cargo"
+args = ["test", "--features=integration-tests"]
+
+[tasks.test-nocapture]
+env = { "MLFLOW_PATH" = "/tmp/mlruns" }
+command = "cargo"
+args = ["test", "--features=integration-tests", "--", "--nocapture"]
+
+[tasks.test-and-clean]
+ignore_errors = true
+dependencies = [
+    "start-test-docker",
+    "delay-5-secs",
+    "test-nocapture",
+    "format",
+    "clippy",
+    "restart-test-docker",
+    "docs"
+]
+
+### Tasks for CI tests (also works locally)
+
+[tasks.full-integration-tests]
+dependencies = [
+    "pre-coverage",
+    "delay-5-secs",
+    "full-integration-tests-run",
+    "post-coverage"
+]
+
+[tasks.full-integration-tests-run]
+env = { "MLFLOW_PATH" = "${CARGO_MAKE_WORKING_DIRECTORY}/tmp/mlflow", "MLFLOW_URL" = "http://localhost:5050" }
+command = "cargo"
+args = [ "test", "--features=integration-tests" ]
+
 [tasks.test-verbose]
+# change config of existing task
 clear = true
 dependencies = ["full-integration-tests"]
 
 [tasks.pre-coverage]
+# add pre-coverage config to start docker
 command = "docker"
-args = ["run", "-d", "--rm", "-p", "5000:5000", "--name", "mlflow-full-integration-tests-coverage", "mockersf/mlflow-test"]
+args = [
+    "run", "-d", "--rm",
+    "-p", "5050:5000",
+    "-v", "${CARGO_MAKE_WORKING_DIRECTORY}/tmp/mlflow:/mlflow/",
+    "--name", "mlflow-full-integration-tests",
+    "mockersf/mlflow-test"
+]
 
 [tasks.post-coverage]
+# add post-coverage config to stop docker
 command = "docker"
-args = ["stop", "mlflow-full-integration-tests-coverage"]
+args = ["stop", "mlflow-full-integration-tests"]
+
+[tasks.coverage-kcov]
+# override environment of coverage-kcov task
+env = { "CARGO_MAKE_KCOV_INCLUDE_PATTERN" = "${CARGO_MAKE_WORKING_DIRECTORY}/src/", "MLFLOW_PATH" = "${CARGO_MAKE_WORKING_DIRECTORY}/tmp/mlflow", "MLFLOW_URL" = "http://localhost:5050" }
