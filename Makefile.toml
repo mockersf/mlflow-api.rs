@@ -1,9 +1,12 @@
 [env]
 RUST_TEST_THREADS = "1"
 
+[env.as-github]
+GITHUB_WORKSPACE = "."
+
 ### Entry points:
 # cargo make test-and-clean # will start test docker, run tests, cargo fmt, cargo clippy, build doc, and clean docker
-# cargo make full-integration-tests # will run tests as in CI
+# cargo make --profile as-github full-integration-tests # will run tests as in CI
 
 [tasks.delay-5-secs]
 command = "sleep"
