@@ -40,12 +40,12 @@ dependencies = [
 ### Tasks for local tests
 
 [tasks.test]
-env = { "MLFLOW_PATH" = "/tmp/mlruns" }
+env = { MLFLOW_PATH = "/tmp/mlruns" }
 command = "cargo"
 args = ["test", "--features=integration-tests"]
 
 [tasks.test-nocapture]
-env = { "MLFLOW_PATH" = "/tmp/mlruns" }
+env = { MLFLOW_PATH = "/tmp/mlruns" }
 command = "cargo"
 args = ["test", "--features=integration-tests", "--", "--nocapture"]
 
@@ -67,14 +67,33 @@ dependencies = [
 dependencies = [
     "pre-coverage",
     "delay-5-secs",
+    "debug-env",
     "full-integration-tests-run",
     "post-coverage"
 ]
 
+[tasks.debug-env.env]
+MLFLOW_PATH = "${CARGO_MAKE_WORKING_DIRECTORY}/tmp/mlflow"
+MLFLOW_URL = "http://localhost:5050"
+[tasks.debug-env]
+script = [
+'''
+set -ex
+pwd
+ls
+echo $CARGO_MAKE_WORKING_DIRECTORY
+echo $MLFLOW_PATH
+echo $GITHUB_WORKSPACE
+'''
+]
+
+
+[tasks.full-integration-tests-run.env]
+MLFLOW_PATH = "${CARGO_MAKE_WORKING_DIRECTORY}/tmp/mlflow"
+MLFLOW_URL = "http://localhost:5050"
 [tasks.full-integration-tests-run]
-env = { "MLFLOW_PATH" = "${CARGO_MAKE_WORKING_DIRECTORY}/tmp/mlflow", "MLFLOW_URL" = "http://localhost:5050" }
 command = "cargo"
-args = [ "test", "--features=integration-tests" ]
+args = [ "test", "--features=integration-tests", "--", "--nocapture" ]
 
 [tasks.test-verbose]
 # change config of existing task
@@ -97,6 +116,8 @@ args = [
 command = "docker"
 args = ["stop", "mlflow-full-integration-tests"]
 
-[tasks.coverage-kcov]
+[tasks.coverage-kcov.env]
 # override environment of coverage-kcov task
-env = { "CARGO_MAKE_KCOV_INCLUDE_PATTERN" = "${CARGO_MAKE_WORKING_DIRECTORY}/src/", "MLFLOW_PATH" = "${CARGO_MAKE_WORKING_DIRECTORY}/tmp/mlflow", "MLFLOW_URL" = "http://localhost:5050" }
+CARGO_MAKE_KCOV_INCLUDE_PATTERN = "${CARGO_MAKE_WORKING_DIRECTORY}/src/"
+MLFLOW_PATH = "${CARGO_MAKE_WORKING_DIRECTORY}/tmp/mlflow"
+MLFLOW_URL = "http://localhost:5050"

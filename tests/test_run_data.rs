@@ -419,7 +419,7 @@ fn can_list_artifacts() {
         .has_length(0);
     let root_uri = artifacts.unwrap().0;
 
-    let mut file = File::create(format!("{}/{}/{}", storage, root_uri, file_name)).unwrap();
+    let mut file = File::create(dbg!(format!("{}/{}/{}", storage, root_uri, file_name))).unwrap();
     file.write_all(content.as_bytes()).unwrap();
 
     let artifacts = mlflow.list_artifacts(&run_id, None);
