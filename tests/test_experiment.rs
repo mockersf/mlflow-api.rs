@@ -6,8 +6,9 @@ use spectral::prelude::*;
 fn can_create_experiment() {
     let experiment_name: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
 
-    let mlflow = mlflow_api::MlflowClient::new(
-        &std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+    let mlflow = mlflow_api::MLflowAPI::new(
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
@@ -22,8 +23,9 @@ fn can_create_experiment() {
 fn cant_create_2_experiments_with_same_name() {
     let experiment_name: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
 
-    let mlflow = mlflow_api::MlflowClient::new(
-        &std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+    let mlflow = mlflow_api::MLflowAPI::new(
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
@@ -45,8 +47,9 @@ fn cant_create_2_experiments_with_same_name() {
 fn can_get_experiment() {
     let experiment_name: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
 
-    let mlflow = mlflow_api::MlflowClient::new(
-        &std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+    let mlflow = mlflow_api::MLflowAPI::new(
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
@@ -68,8 +71,9 @@ fn can_get_experiment() {
 fn cant_get_unknown_experiment() {
     let experiment_id: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
 
-    let mlflow = mlflow_api::MlflowClient::new(
-        &std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+    let mlflow = mlflow_api::MLflowAPI::new(
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
@@ -86,8 +90,9 @@ fn cant_get_unknown_experiment() {
 fn can_get_experiment_by_name() {
     let experiment_name: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
 
-    let mlflow = mlflow_api::MlflowClient::new(
-        &std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+    let mlflow = mlflow_api::MLflowAPI::new(
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
@@ -109,8 +114,9 @@ fn can_update_experiment() {
     let experiment_name: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
     let new_experiment_name: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
 
-    let mlflow = mlflow_api::MlflowClient::new(
-        &std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+    let mlflow = mlflow_api::MLflowAPI::new(
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
@@ -140,8 +146,9 @@ fn can_update_experiment() {
 fn can_delete_and_restore_experiment() {
     let experiment_name: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
 
-    let mlflow = mlflow_api::MlflowClient::new(
-        &std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+    let mlflow = mlflow_api::MLflowAPI::new(
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
@@ -182,8 +189,9 @@ fn can_tag_experiment() {
     let tag_key: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
     let tag_value: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
 
-    let mlflow = mlflow_api::MlflowClient::new(
-        &std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+    let mlflow = mlflow_api::MLflowAPI::new(
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
@@ -215,8 +223,9 @@ fn can_tag_experiment() {
 
 #[test]
 fn can_list_experiments() {
-    let mlflow = mlflow_api::MlflowClient::new(
-        &std::env::var("MLFLOW_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+    let mlflow = mlflow_api::MLflowAPI::new(
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 

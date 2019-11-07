@@ -1,7 +1,6 @@
+use crate::api::{send_and_return_field, EmptyResponse};
 use crate::errors::{ClientError, GetExperimentErrorCode};
-use crate::{
-    send_and_return_field, EmptyResponse, MlflowClient, Run, RunInfo, RunStatus, RunTag, ViewType,
-};
+use crate::{MLflowAPI, Run, RunInfo, RunStatus, RunTag, ViewType};
 
 #[derive(serde::Serialize, Debug)]
 struct CreateRunQuery<'a> {
@@ -43,12 +42,12 @@ struct UpdateRunResponse {
 }
 
 #[derive(serde::Serialize, Debug)]
-struct SearchRunsQuery<'a, 'b, 'c, 'd> {
+struct SearchRunsQuery<'a, 'b, 'c, 'd, 'e, 'f> {
     experiment_ids: &'c [&'d str],
     filter: Option<&'a str>,
     run_view_type: Option<ViewType>,
     max_results: Option<u32>,
-    order_by: Option<Vec<String>>,
+    order_by: Option<&'e [&'f str]>,
     page_token: Option<&'b str>,
 }
 
@@ -58,7 +57,7 @@ struct SearchRunsResponse {
     next_page_token: Option<String>,
 }
 
-impl MlflowClient {
+impl MLflowAPI {
     /// Create a new run within an experiment. A run is usually a single execution of a machine learning or data ETL
     /// pipeline. MLflow uses runs to track `Param`, `Metric`, and `RunTag` associated with a single execution.
     pub fn create_run(
@@ -69,7 +68,7 @@ impl MlflowClient {
     ) -> Result<Run, ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/runs/create", self.url))
+            .post(&format!("{}/api/2.0/mlflow/runs/create", self.uri))
             .json(&CreateRunQuery {
                 experiment_id,
                 start_time,
@@ -82,7 +81,7 @@ impl MlflowClient {
     pub fn delete_run(&self, run_id: &str) -> Result<(), ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/runs/delete", self.url))
+            .post(&format!("{}/api/2.0/mlflow/runs/delete", self.uri))
             .json(&DeleteRunQuery { run_id });
         send_and_return_field(req, |_: EmptyResponse| ())
     }
@@ -91,7 +90,7 @@ impl MlflowClient {
     pub fn restore_run(&self, run_id: &str) -> Result<(), ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/runs/restore", self.url))
+            .post(&format!("{}/api/2.0/mlflow/runs/restore", self.uri))
             .json(&RestoreRunQuery { run_id });
         send_and_return_field(req, |_: EmptyResponse| ())
     }
@@ -102,7 +101,7 @@ impl MlflowClient {
     pub fn get_run(&self, run_id: &str) -> Result<Run, ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .get(&format!("{}/api/2.0/mlflow/runs/get", self.url))
+            .get(&format!("{}/api/2.0/mlflow/runs/get", self.uri))
             .query(&[("run_id", run_id)]);
         send_and_return_field(req, |resp: GetRunResponse| resp.run)
     }
@@ -116,7 +115,7 @@ impl MlflowClient {
     ) -> Result<RunInfo, ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/runs/update", self.url))
+            .post(&format!("{}/api/2.0/mlflow/runs/update", self.uri))
             .json(&UpdateRunQuery {
                 run_id,
                 status,
@@ -132,12 +131,12 @@ impl MlflowClient {
         filter: Option<&str>,
         run_view_type: Option<ViewType>,
         max_results: Option<u32>,
-        order_by: Option<Vec<String>>,
+        order_by: Option<&[&str]>,
         page_token: Option<&str>,
     ) -> Result<(Vec<Run>, Option<String>), ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/runs/search", self.url))
+            .post(&format!("{}/api/2.0/mlflow/runs/search", self.uri))
             .json(&SearchRunsQuery {
                 experiment_ids,
                 filter,

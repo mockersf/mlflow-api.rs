@@ -1,7 +1,8 @@
+use crate::api::{send_and_return_field, EmptyResponse};
 use crate::errors::{
     ClientError, CreateExperimentErrorCode, GetExperimentErrorCode, ListExperimentsErrorCode,
 };
-use crate::{send_and_return_field, EmptyResponse, Experiment, MlflowClient, ViewType};
+use crate::{Experiment, MLflowAPI, ViewType};
 
 #[derive(serde::Serialize, Debug)]
 struct CreateExperimentQuery<'a, 'b> {
@@ -47,7 +48,7 @@ struct SetExperimentTagQuery<'a, 'b, 'c> {
     value: &'c str,
 }
 
-impl MlflowClient {
+impl MLflowAPI {
     /// Create an experiment with a name. Returns the ID of the newly created experiment. Validates that another
     /// experiment with the same name does not already exist and fails if another experiment with the same name
     /// already exists.
@@ -58,7 +59,7 @@ impl MlflowClient {
     ) -> Result<String, ClientError<CreateExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/experiments/create", self.url))
+            .post(&format!("{}/api/2.0/mlflow/experiments/create", self.uri))
             .json(&CreateExperimentQuery {
                 name,
                 artifact_location,
@@ -73,7 +74,7 @@ impl MlflowClient {
     ) -> Result<Vec<Experiment>, ClientError<ListExperimentsErrorCode>> {
         let mut req = self
             .client
-            .get(&format!("{}/api/2.0/mlflow/experiments/list", self.url));
+            .get(&format!("{}/api/2.0/mlflow/experiments/list", self.uri));
         if let Some(view_type) = view_type {
             req = req.query(&[("view_type", view_type)]);
         }
@@ -87,7 +88,7 @@ impl MlflowClient {
     ) -> Result<Experiment, ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .get(&format!("{}/api/2.0/mlflow/experiments/get", self.url))
+            .get(&format!("{}/api/2.0/mlflow/experiments/get", self.uri))
             .query(&[("experiment_id", experiment_id)]);
         send_and_return_field(req, |resp: GetExperimentResponse| resp.experiment)
     }
@@ -103,7 +104,7 @@ impl MlflowClient {
             .client
             .get(&format!(
                 "{}/api/2.0/mlflow/experiments/get-by-name",
-                self.url
+                self.uri
             ))
             .query(&[("experiment_name", experiment_name)]);
         send_and_return_field(req, |resp: GetExperimentResponse| resp.experiment)
@@ -117,7 +118,7 @@ impl MlflowClient {
     ) -> Result<(), ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/experiments/delete", self.url))
+            .post(&format!("{}/api/2.0/mlflow/experiments/delete", self.uri))
             .json(&DeleteExperimentQuery { experiment_id });
         send_and_return_field(req, |_: EmptyResponse| ())
     }
@@ -130,7 +131,7 @@ impl MlflowClient {
     ) -> Result<(), ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/experiments/restore", self.url))
+            .post(&format!("{}/api/2.0/mlflow/experiments/restore", self.uri))
             .json(&RestoreExperimentQuery { experiment_id });
         send_and_return_field(req, |_: EmptyResponse| ())
     }
@@ -143,7 +144,7 @@ impl MlflowClient {
     ) -> Result<(), ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/experiments/update", self.url))
+            .post(&format!("{}/api/2.0/mlflow/experiments/update", self.uri))
             .json(&UpdateExperimentQuery {
                 experiment_id,
                 new_name,
@@ -162,7 +163,7 @@ impl MlflowClient {
             .client
             .post(&format!(
                 "{}/api/2.0/mlflow/experiments/set-experiment-tag",
-                self.url
+                self.uri
             ))
             .json(&SetExperimentTagQuery {
                 experiment_id,

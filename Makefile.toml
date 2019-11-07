@@ -76,7 +76,7 @@ dependencies = [
 
 [tasks.full-integration-tests-run.env]
 MLFLOW_PATH = "${CARGO_MAKE_WORKING_DIRECTORY}/tmp/mlflow"
-MLFLOW_URL = "http://localhost:5050"
+MLFLOW_TRACKING_URL = "http://localhost:5050"
 [tasks.full-integration-tests-run]
 command = "cargo"
 args = [ "test", "--features=integration-tests", "--", "--nocapture" ]
@@ -116,4 +116,4 @@ args = ["stop", "mlflow-full-integration-tests"]
 # override environment of coverage-kcov task
 CARGO_MAKE_KCOV_INCLUDE_PATTERN = "${CARGO_MAKE_WORKING_DIRECTORY}/src/"
 MLFLOW_PATH = "${CARGO_MAKE_WORKING_DIRECTORY}/tmp/mlflow"
-MLFLOW_URL = "http://localhost:5050"
+MLFLOW_TRACKING_URL = "http://localhost:5050"

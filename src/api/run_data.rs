@@ -1,5 +1,6 @@
+use crate::api::{send_and_return_field, EmptyResponse};
 use crate::errors::{ClientError, GetExperimentErrorCode};
-use crate::{send_and_return_field, EmptyResponse, FileInfo, Metric, MlflowClient, Param, RunTag};
+use crate::{FileInfo, MLflowAPI, Metric, Param, RunTag};
 
 #[derive(serde::Serialize, Debug)]
 struct SetRunTagQuery<'a, 'b, 'c> {
@@ -50,7 +51,7 @@ struct ListArtifactsResponse {
     files: Vec<FileInfo>,
 }
 
-impl MlflowClient {
+impl MLflowAPI {
     /// Set a tag on a run. Tags are run metadata that can be updated during a run and after a run completes.
     pub fn set_run_tag(
         &self,
@@ -60,7 +61,7 @@ impl MlflowClient {
     ) -> Result<(), ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/runs/set-tag", self.url))
+            .post(&format!("{}/api/2.0/mlflow/runs/set-tag", self.uri))
             .json(&SetRunTagQuery { run_id, key, value });
         send_and_return_field(req, |_: EmptyResponse| ())
     }
@@ -73,7 +74,7 @@ impl MlflowClient {
     ) -> Result<(), ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/runs/delete-tag", self.url))
+            .post(&format!("{}/api/2.0/mlflow/runs/delete-tag", self.uri))
             .json(&DeleteRunTagQuery { run_id, key });
         send_and_return_field(req, |_: EmptyResponse| ())
     }
@@ -90,7 +91,7 @@ impl MlflowClient {
     ) -> Result<(), ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/runs/log-metric", self.url))
+            .post(&format!("{}/api/2.0/mlflow/runs/log-metric", self.uri))
             .json(&LogMetricQuery {
                 run_id,
                 key,
@@ -109,7 +110,7 @@ impl MlflowClient {
     ) -> Result<Vec<Metric>, ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .get(&format!("{}/api/2.0/mlflow/metrics/get-history", self.url))
+            .get(&format!("{}/api/2.0/mlflow/metrics/get-history", self.uri))
             .query(&[("run_id", run_id), ("metric_key", metric_key)]);
         send_and_return_field(req, |resp: GetMetricHistoryResponse| resp.metrics)
     }
@@ -125,7 +126,7 @@ impl MlflowClient {
     ) -> Result<(), ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/runs/log-parameter", self.url))
+            .post(&format!("{}/api/2.0/mlflow/runs/log-parameter", self.uri))
             .json(&LogParamQuery { run_id, key, value });
         send_and_return_field(req, |_: EmptyResponse| ())
     }
@@ -143,7 +144,7 @@ impl MlflowClient {
     ) -> Result<(), ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .post(&format!("{}/api/2.0/mlflow/runs/log-batch", self.url))
+            .post(&format!("{}/api/2.0/mlflow/runs/log-batch", self.uri))
             .json(&LogBatchQuery {
                 run_id,
                 metrics,
@@ -162,7 +163,7 @@ impl MlflowClient {
     ) -> Result<(String, Vec<FileInfo>), ClientError<GetExperimentErrorCode>> {
         let req = self
             .client
-            .get(&format!("{}/api/2.0/mlflow/artifacts/list", self.url));
+            .get(&format!("{}/api/2.0/mlflow/artifacts/list", self.uri));
         let req = if let Some(path) = path {
             req.query(&[("run_id", run_id), ("path", path)])
         } else {

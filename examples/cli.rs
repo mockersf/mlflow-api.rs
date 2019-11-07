@@ -3,12 +3,17 @@ use structopt::{clap::AppSettings, StructOpt};
 #[derive(StructOpt)]
 #[structopt(
     setting(AppSettings::ColoredHelp),
-    name = "mlflow-cli",
-    about = "CLI example to interact with MLFlow"
+    name = "mlflow-api-cli",
+    about = "CLI example to interact with MLFlow API"
 )]
 struct Opt {
-    #[structopt(short, long, help = "URL to the MLFlow server")]
-    url: String,
+    #[structopt(
+        short,
+        long,
+        help = "URI to the MLFlow server",
+        env = "MLFLOW_TRACKING_URI"
+    )]
+    uri: String,
     #[structopt(subcommand)]
     command: Commands,
 }
@@ -68,7 +73,7 @@ enum Commands {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opt = Opt::from_args();
 
-    let mlflow = mlflow_api::MlflowClient::new(&opt.url)?;
+    let mlflow = mlflow_api::MLflowAPI::new(&opt.uri)?;
     match opt.command {
         Commands::CreateExperiment { name } => {
             println!("{:#?}", mlflow.create_experiment(&name, None)?);
