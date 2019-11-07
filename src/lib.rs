@@ -18,3 +18,6 @@ pub use api::MLflowAPI;
 mod structures;
 pub use structures::*;
 pub mod errors;
+
+mod client;
+pub use client::MLflowClient;
