@@ -31,13 +31,11 @@ impl MLflowClient {
         if let Some(run_id) = run_id {
             self.api.get_run(run_id).map_err(|_| ())?;
             self.active_run_id = Some(run_id.to_string());
+        } else if let Ok(run_id) = env::var("MLFLOW_RUN_ID") {
+            self.api.get_run(&run_id).map_err(|_| ())?;
+            self.active_run_id = Some(run_id);
         } else {
-            if let Ok(run_id) = env::var("MLFLOW_RUN_ID") {
-                self.api.get_run(&run_id).map_err(|_| ())?;
-                self.active_run_id = Some(run_id);
-            } else {
-                return Err(());
-            }
+            return Err(());
         }
         Ok(())
     }
@@ -51,14 +49,10 @@ impl MLflowClient {
         if let Some(experiment_id) = experiment_id {
             self.api.get_experiment(experiment_id).map_err(|_| ())?;
             self.active_experiment_id = Some(experiment_id.to_string());
-        } else {
-            if let Ok(experiment_name) = env::var("MLFLOW_EXPERIMENT_NAME") {
-                self.set_experiment(&experiment_name).map_err(|_| ())?;
-            } else {
-                if let Ok(experiment_name) = env::var("MLFLOW_EXPERIMENT_ID") {
-                    self.set_experiment(&experiment_name).map_err(|_| ())?;
-                }
-            }
+        } else if let Ok(experiment_name) = env::var("MLFLOW_EXPERIMENT_NAME") {
+            self.set_experiment(&experiment_name).map_err(|_| ())?;
+        } else if let Ok(experiment_id) = env::var("MLFLOW_EXPERIMENT_ID") {
+            self.set_experiment(&experiment_id).map_err(|_| ())?;
         }
         if self.active_experiment_id.is_none() {
             self.set_experiment("Default").map_err(|_| ())?;
@@ -217,7 +211,7 @@ impl MLflowClient {
                 experiment_ids,
                 filter_string,
                 Some(run_view_type.unwrap_or(crate::ViewType::ActiveOnly)),
-                Some(max_result.unwrap_or(100000)),
+                Some(max_result.unwrap_or(100_000)),
                 order_by,
                 None,
             )

@@ -13,7 +13,8 @@ fn can_manage_run_tags() {
     let value2: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
 
     let mlflow = mlflow_api::MLflowAPI::new(
-        &std::env::var("MLFLOW_TRACKING_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
@@ -93,7 +94,8 @@ fn can_log_params() {
     let value2: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
 
     let mlflow = mlflow_api::MLflowAPI::new(
-        &std::env::var("MLFLOW_TRACKING_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
@@ -167,7 +169,8 @@ fn can_log_metrics() {
     let value_2 = thread_rng().gen::<f32>();
 
     let mlflow = mlflow_api::MLflowAPI::new(
-        &std::env::var("MLFLOW_TRACKING_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
@@ -254,7 +257,8 @@ fn can_log_batch() {
         .as_millis() as u64;
 
     let mlflow = mlflow_api::MLflowAPI::new(
-        &std::env::var("MLFLOW_TRACKING_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
 
@@ -390,7 +394,8 @@ fn can_list_artifacts() {
     let content: String = thread_rng().sample_iter(&Alphanumeric).take(30).collect();
 
     let mlflow = mlflow_api::MLflowAPI::new(
-        &std::env::var("MLFLOW_TRACKING_URL").unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
+        &std::env::var("MLFLOW_TRACKING_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:5000".to_string()),
     )
     .unwrap();
     let storage = std::env::var("MLFLOW_PATH").unwrap_or_else(|_| "/tmp/mlruns".to_string());
