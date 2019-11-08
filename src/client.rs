@@ -5,7 +5,8 @@ use std::env;
 pub struct MLflowClient {
     active_experiment_id: Option<String>,
     active_run_id: Option<String>,
-    api: crate::MLflowAPI,
+    /// API Client used to send requests directly to MLflow.
+    pub api: crate::MLflowAPI,
 }
 
 impl MLflowClient {
@@ -42,8 +43,7 @@ impl MLflowClient {
 
     /// TODO
     pub fn start_run(&mut self, run_name: &str) -> Result<(), ()> {
-        self.start_run_without_tags(None, Some(run_name))
-            .map(|_| ())
+        self.start_run_internal(None, Some(run_name)).map(|_| ())
     }
 
     /// TODO
@@ -52,11 +52,11 @@ impl MLflowClient {
         experiment_id: &str,
         run_name: &str,
     ) -> Result<(), ()> {
-        self.start_run_without_tags(Some(experiment_id), Some(run_name))
+        self.start_run_internal(Some(experiment_id), Some(run_name))
             .map(|_| ())
     }
 
-    fn start_run_without_tags(
+    fn start_run_internal(
         &mut self,
         experiment_id: Option<&str>,
         run_name: Option<&str>,
@@ -129,7 +129,7 @@ impl MLflowClient {
 
     fn ensure_active_run(&mut self) -> Result<&String, ()> {
         if self.active_run_id.is_none() {
-            self.start_run_without_tags(None, None).map_err(|_| ())?;
+            self.start_run_internal(None, None).map_err(|_| ())?;
         }
         self.active_run_id.as_ref().ok_or(())
     }
@@ -208,11 +208,11 @@ impl MLflowClient {
 
     /// End an active MLflow run (if there is one).
     pub fn end_run(&self) -> Result<(), ()> {
-        self.end_run_with_status(crate::RunStatus::Finished)
+        self.update_run_status(crate::RunStatus::Finished)
     }
 
-    /// End an active MLflow run (if there is one) with the specified status.
-    pub fn end_run_with_status(&self, status: crate::RunStatus) -> Result<(), ()> {
+    /// Update an active MLflow run (if there is one) with the specified status.
+    pub fn update_run_status(&self, status: crate::RunStatus) -> Result<(), ()> {
         let end_time = match status {
             crate::RunStatus::Failed | crate::RunStatus::Finished | crate::RunStatus::Killed => {
                 Some(
