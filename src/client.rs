@@ -41,11 +41,26 @@ impl MLflowClient {
     }
 
     /// TODO
-    pub fn start_run(&mut self, experiment_id: Option<&str>, _run_name: &str) -> Result<(), ()> {
-        self.start_run_without_tags(experiment_id).map(|_| ())
+    pub fn start_run(&mut self, run_name: &str) -> Result<(), ()> {
+        self.start_run_without_tags(None, Some(run_name))
+            .map(|_| ())
     }
 
-    fn start_run_without_tags(&mut self, experiment_id: Option<&str>) -> Result<crate::Run, ()> {
+    /// TODO
+    pub fn start_run_in_experiment(
+        &mut self,
+        experiment_id: &str,
+        run_name: &str,
+    ) -> Result<(), ()> {
+        self.start_run_without_tags(Some(experiment_id), Some(run_name))
+            .map(|_| ())
+    }
+
+    fn start_run_without_tags(
+        &mut self,
+        experiment_id: Option<&str>,
+        run_name: Option<&str>,
+    ) -> Result<crate::Run, ()> {
         if let Some(experiment_id) = experiment_id {
             self.api.get_experiment(experiment_id).map_err(|_| ())?;
             self.active_experiment_id = Some(experiment_id.to_string());
@@ -57,18 +72,32 @@ impl MLflowClient {
         if self.active_experiment_id.is_none() {
             self.set_experiment("Default").map_err(|_| ())?;
         }
-        self.api
-            .create_run(
-                &self.active_experiment_id.clone().expect(""),
-                Some(
-                    std::time::SystemTime::now()
-                        .duration_since(std::time::UNIX_EPOCH)
-                        .expect("time went strange there")
-                        .as_millis() as u64,
-                ),
-                None, // TODO: tags
-            )
-            .map_err(|_| ())
+        let mut tags = vec![crate::RunTag {
+            key: "mlflow.user".to_string(),
+            value: whoami::username(),
+        }];
+        if let Some(run_name) = run_name {
+            tags.push(crate::RunTag {
+                key: "mlflow.runName".to_string(),
+                value: run_name.to_string(),
+            });
+        }
+        if let Ok(run) = self.api.create_run(
+            &self.active_experiment_id.clone().expect(""),
+            Some(
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .expect("time went strange there")
+                    .as_millis() as u64,
+            ),
+            Some(tags),
+        ) {
+            self.active_run_id = Some(run.info.run_id.clone());
+            Ok(run)
+        } else {
+            Err(())
+        }
+        // .map_err(|_| ())
     }
 
     /// Set given experiment as active experiment. If experiment does not exist, create an experiment with provided
@@ -100,7 +129,7 @@ impl MLflowClient {
 
     fn ensure_active_run(&mut self) -> Result<&String, ()> {
         if self.active_run_id.is_none() {
-            self.start_run_without_tags(None).map_err(|_| ())?;
+            self.start_run_without_tags(None, None).map_err(|_| ())?;
         }
         self.active_run_id.as_ref().ok_or(())
     }
@@ -120,7 +149,12 @@ impl MLflowClient {
     }
 
     /// Log a metric under the current run, creating a run if necessary.
-    pub fn log_metric(&mut self, key: &str, value: f32, step: Option<u64>) -> Result<(), ()> {
+    pub fn log_metric(&mut self, key: &str, value: f32) -> Result<(), ()> {
+        self.log_metric_at_step(key, value, 0)
+    }
+
+    /// Log a metric under the current run at step, creating a run if necessary.
+    pub fn log_metric_at_step(&mut self, key: &str, value: f32, step: u64) -> Result<(), ()> {
         let run_id = self.ensure_active_run()?.clone();
         self.api
             .log_metric(
@@ -131,7 +165,7 @@ impl MLflowClient {
                     .duration_since(std::time::UNIX_EPOCH)
                     .expect("time went strange there")
                     .as_millis() as u64,
-                step,
+                Some(step),
             )
             .map_err(|_| ())
     }
@@ -173,25 +207,26 @@ impl MLflowClient {
     }
 
     /// End an active MLflow run (if there is one).
-    pub fn end_run(&self, status: Option<crate::RunStatus>) -> Result<(), ()> {
+    pub fn end_run(&self) -> Result<(), ()> {
+        self.end_run_with_status(crate::RunStatus::Finished)
+    }
+
+    /// End an active MLflow run (if there is one) with the specified status.
+    pub fn end_run_with_status(&self, status: crate::RunStatus) -> Result<(), ()> {
         let end_time = match status {
-            Some(crate::RunStatus::Failed)
-            | Some(crate::RunStatus::Finished)
-            | Some(crate::RunStatus::Killed) => Some(
-                std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .expect("time went strange there")
-                    .as_millis() as u64,
-            ),
+            crate::RunStatus::Failed | crate::RunStatus::Finished | crate::RunStatus::Killed => {
+                Some(
+                    std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .expect("time went strange there")
+                        .as_millis() as u64,
+                )
+            }
             _ => None,
         };
         self.active_run_id.as_ref().ok_or(()).and_then(|run_id| {
             self.api
-                .update_run(
-                    &run_id,
-                    status.unwrap_or(crate::RunStatus::Finished),
-                    end_time,
-                )
+                .update_run(&run_id, status, end_time)
                 .map(|_| ())
                 .map_err(|_| ())
         })
